@@ -10,16 +10,16 @@ from sentinelsat import SentinelAPI, geojson_to_wkt
 from datetime import date, datetime, timedelta
 import geojson
 
-SENTINEL_DIR = './sentinel2/'
-PG_USER = 'pseed'
-PG_PWD  = ''
-PG_DB   = 'pseed_db'
-PG_HOST = 'localhost'
+SENTINEL_DIR = os.environ.get('SENTINEL_DIR')
+PG_USER = os.environ.get('PG_USER')
+PG_PWD  = os.environ.get('PG_PWD')
+PG_DB   = os.environ.get('PG_DB')
+PG_HOST = os.environ.get('PG_HOST')
 
-COPERNIC_USER = ''
-COPERNIC_PWD = ''
-COPERNIC_SAT = 'Sentinel-2'
-COPERNIC_LEVEL = 'Level-2A'
+COPERNIC_USER = os.environ.get('SENTINEL_USER')
+COPERNIC_PWD = os.environ.get('SENTINEL_PWD')
+COPERNIC_SAT = os.environ.get('SENTINEL_SAT')
+COPERNIC_LEVEL = os.environ.get('SENTINEL_LEVEL')
 
 def createParser ():
     parser = argparse.ArgumentParser()
@@ -27,13 +27,13 @@ def createParser ():
     parser.add_argument ( '-d', '--delta', type=int, default=1 )
     parser.add_argument ( '-c', '--cloud', type=int, default=30 )
     return parser
- 
+
 if __name__ == '__main__':
     parser = createParser()
     namespace = parser.parse_args(sys.argv[1:])
-    id_comp = namespace.id_comp 
+    id_comp = namespace.id_comp
 
-# определение временного диапазона для поиска 
+# определение временного диапазона для поиска
 delta = timedelta(days=int(namespace.delta))
 end=datetime.today()
 start=end-delta

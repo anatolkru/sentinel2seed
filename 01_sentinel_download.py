@@ -4,16 +4,17 @@ from sentinelsat import SentinelAPI, geojson_to_wkt
 from datetime import date, datetime, timedelta
 import geojson
 
-SENTINEL_DIR = './sentinel2/'
-PG_USER = 'pseed'
-PG_PWD  = ''
-PG_DB   = 'pseed_db'
-PG_HOST = 'localhost'
 
-COPERNIC_USER = ''
-COPERNIC_PWD = ''
-COPERNIC_SAT = 'Sentinel-2'
-COPERNIC_LEVEL = 'Level-2A'
+SENTINEL_DIR = os.environ.get('SENTINEL_DIR')
+PG_USER = os.environ.get('PG_USER')
+PG_PWD  = os.environ.get('PG_PWD')
+PG_DB   = os.environ.get('PG_DB')
+PG_HOST = os.environ.get('PG_HOST')
+
+COPERNIC_USER = os.environ.get('SENTINEL_USER')
+COPERNIC_PWD = os.environ.get('SENTINEL_PWD')
+COPERNIC_SAT = os.environ.get('SENTINEL_SAT')
+COPERNIC_LEVEL = os.environ.get('SENTINEL_LEVEL')
 
 def createParser ():
     parser = argparse.ArgumentParser()
@@ -37,7 +38,7 @@ api = SentinelAPI(COPERNIC_USER, COPERNIC_PWD, 'https://scihub.copernicus.eu/dhu
 conn = psycopg2.connect(dbname=PG_DB, user=PG_USER,
                         password=PG_PWD, host=PG_HOST)
 cursor = conn.cursor()
-# выводим имя компании в терминал
+#  output name company
 geosql_name = 'SELECT company_name FROM meteo_company_catalog where company_id={}'.format(id_comp)
 cursor.execute(geosql_name)
 comp_name = cursor.fetchone()
@@ -47,7 +48,7 @@ geosql = 'SELECT ST_AsGeoJSON(geom) FROM meteo_fields_catalog where company_id={
 cursor.execute(geosql)
 for row in cursor:
     if row[0] != None:
-        # проверка существования каталога
+        #
         if not os.path.isdir(SENTINEL_DIR):
             print ('Do you not have directory : '+SENTINEL_DIR)
             quit()

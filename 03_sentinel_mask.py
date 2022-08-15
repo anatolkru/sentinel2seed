@@ -15,17 +15,16 @@ import numpy
 import matplotlib.pyplot as plt
 #%matplotlib inline
 
+SENTINEL_DIR = os.environ.get('SENTINEL_DIR')
+PG_USER = os.environ.get('PG_USER')
+PG_PWD  = os.environ.get('PG_PWD')
+PG_DB   = os.environ.get('PG_DB')
+PG_HOST = os.environ.get('PG_HOST')
 
-SENTINEL_DIR = './sentinel2/'
-PG_USER = 'pseed'
-PG_PWD  = ''
-PG_DB   = 'pseed_db'
-PG_HOST = 'localhost'
-
-COPERNIC_USER = ''
-COPERNIC_PWD = ''
-COPERNIC_SAT = 'Sentinel-2'
-COPERNIC_LEVEL = 'Level-2A'
+COPERNIC_USER = os.environ.get('SENTINEL_USER')
+COPERNIC_PWD = os.environ.get('SENTINEL_PWD')
+COPERNIC_SAT = os.environ.get('SENTINEL_SAT')
+COPERNIC_LEVEL = os.environ.get('SENTINEL_LEVEL')
 
 from_proj = pyproj.Proj(init='epsg:4326')
 to_proj = pyproj.Proj(init='epsg:32636')
@@ -36,11 +35,11 @@ def createParser ():
     parser.add_argument ( '-d', '--delta', type=int, default=1 )
     parser.add_argument ( '-c', '--cloud', type=int, default=30 )
     return parser
- 
+
 if __name__ == '__main__':
     parser = createParser()
     namespace = parser.parse_args(sys.argv[1:])
-    id_comp = namespace.id_comp 
+    id_comp = namespace.id_comp
 
 def calc_ndvi(b8,b4):
     '''Calculate NDVI from integer arrays'''
@@ -49,7 +48,7 @@ def calc_ndvi(b8,b4):
     ndvi = (nir - red) / (nir + red)
     return ndvi
 
-# определение временного диапазона для поиска 
+# определение временного диапазона для поиска
 delta = timedelta(days=int(namespace.delta))
 end=datetime.today()
 start=end-delta
@@ -190,7 +189,7 @@ for row in cursor:
                     from_x, from_y = z
                     coords.append(pyproj.transform(from_proj, to_proj, from_x, from_y))
                 geoms = [{'type': 'Polygon','coordinates':[coords]}]
-                with rasterio.open(path10_B02) as src: 
+                with rasterio.open(path10_B02) as src:
                     out_image, out_transform = mask(src, geoms, crop=True)
                 out_meta = src.meta.copy()
                 out_meta.update ({"driver": "JP2OpenJPEG",
@@ -199,8 +198,8 @@ for row in cursor:
                 upload_file2 = upload_dir + date_ftp + '_L2A_B02_10m.jp2'
                 with rasterio.open(upload_file2, "w", **out_meta) as dest:
                     dest.write(out_image)
-                    
-                with rasterio.open(path10_B03) as src: 
+
+                with rasterio.open(path10_B03) as src:
                     out_image, out_transform = mask(src, geoms, crop=True)
                 out_meta = src.meta.copy()
                 out_meta.update ({"driver": "JP2OpenJPEG",
@@ -209,8 +208,8 @@ for row in cursor:
                 upload_file3 = upload_dir + date_ftp + '_L2A_B03_10m.jp2'
                 with rasterio.open(upload_file3, "w", **out_meta) as dest:
                     dest.write(out_image)
-                
-                with rasterio.open(path10_B04) as src: 
+
+                with rasterio.open(path10_B04) as src:
                     out_image, out_transform = mask(src, geoms, crop=True)
                 out_meta = src.meta.copy()
                 out_meta.update ({"driver": "JP2OpenJPEG",
@@ -219,8 +218,8 @@ for row in cursor:
                 upload_file4 = upload_dir + date_ftp + '_L2A_B04_10m.jp2'
                 with rasterio.open(upload_file4, "w", **out_meta) as dest:
                     dest.write(out_image)
-                
-                with rasterio.open(path10_B08) as src: 
+
+                with rasterio.open(path10_B08) as src:
                     out_image, out_transform = mask(src, geoms, crop=True)
                 out_meta = src.meta.copy()
                 out_meta.update ({"driver": "JP2OpenJPEG",
@@ -229,7 +228,7 @@ for row in cursor:
                 upload_file8 = upload_dir + date_ftp + '_L2A_B08_10m.jp2'
                 with rasterio.open(upload_file8, "w", **out_meta) as dest:
                     dest.write(out_image)
-                
+
                 # NDVI
                 print (upload_file4,upload_file8,upload_dir + date_ftp + '_ndvi.tiff')
                 with rasterio.open(upload_file4) as src:
@@ -238,7 +237,7 @@ for row in cursor:
                     b8 =src.read(1)
                 # Allow division by zero
                 numpy.seterr(divide='ignore', invalid='ignore')
-                
+
                 ndvi = calc_ndvi(b8,b4)
                 #print (ndvi)
                 plt.imshow(ndvi, cmap='RdYlGn')
@@ -247,7 +246,7 @@ for row in cursor:
                 plt.xlabel('Column #')
                 plt.ylabel('Row #')
                 #plt.show()
-                
+
                 out_meta.update ({"driver": "GTiff",
                   "dtype": rasterio.float32,
                   "height": out_image.shape[1],
